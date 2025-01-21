@@ -52,4 +52,8 @@ def main(params):
         return {"error": "No file key provided."}
 
     result = parse_readme(file_key)
+    print(result)
     return result
+
+main({"file_key": "README.md"})
+
