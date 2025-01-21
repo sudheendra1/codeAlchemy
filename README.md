@@ -1,0 +1,3 @@
+An AI-powered interactive debugging assistant that enables developers to communicate directly with their codebase. By establishing a contextual understanding of the entire codebase and engaging in targeted dialogue with users, the system provides intelligent debugging support and problem resolution through a carefully designed agent pipeline.
+
+Traditional debugging processes are time-consuming and often require developers to manually trace through complex codebases to identify and fix issues. There's a need for an intelligent system that can understand the full context of a codebase, interact naturally with developers, and provide accurate solutions while ensuring safety through verification steps
