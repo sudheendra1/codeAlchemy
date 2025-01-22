@@ -7,6 +7,7 @@ from ibm_boto3 import client
 from ibm_botocore.client import Config
 from dotenv import load_dotenv
 from ibm_function.process import process_image_for_ocr, analyze_text_with_nlp, process_readme, process_pdf
+from llm.llm import send_to_llm
 
 app = Flask(__name__)
 
@@ -28,7 +29,7 @@ cos = client(
 )
 
 @app.route("/upload", methods=["POST"])
-def upload_and_process():
+def upload_and_process_with_llm():
     if "file" not in request.files:
         return jsonify({"error": "No file part in the request"}), 400
 
@@ -39,24 +40,17 @@ def upload_and_process():
     file_ext = os.path.splitext(file.filename)[1].lower()
 
     try:
+        # Extract text based on file type
         if file_ext in [".png", ".jpeg", ".jpg"]:  # Image for OCR
             extracted_text = process_image_for_ocr(file)
-            analysis_result = analyze_text_with_nlp(extracted_text)
-            return jsonify({
-                "message": f"Image {file.filename} processed successfully!",
-                "extracted_text_preview": extracted_text[:500],
-                "nlp_analysis": analysis_result
-            }), 200
 
         elif file_ext in [".md", ".txt"]:  # README or text file
-            result = process_readme(file)
-            return jsonify(result), 200
+            extracted_text = file.read().decode("utf-8")
 
         elif file_ext == ".pdf":  # PDF files
-            result = process_pdf(file)
-            return jsonify(result), 200
+            extracted_text = process_pdf(file)["content"]
 
-        else:  # Other files
+        else:  # Unsupported file types
             cos.upload_fileobj(
                 file,
                 COS_BUCKET_NAME,
@@ -67,6 +61,14 @@ def upload_and_process():
                 "note": "File type not explicitly handled but stored in Object Storage."
             }), 200
 
+        # Send extracted text to the LLM
+        llm_response = send_to_llm(extracted_text)
+
+        return jsonify({
+            "message": f"File {file.filename} processed successfully!",
+            "llm_processed_json": llm_response
+        }), 200
+    
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

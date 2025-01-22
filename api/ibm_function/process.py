@@ -130,3 +130,27 @@ def parse_directory_structure(structure_text):
             directory_map[current_dir].append(line.strip())
 
     return directory_map
+
+def parse_readme(file_key):
+    try:
+        # Download the README file
+        response = cos.get_object(Bucket=COS_BUCKET_NAME, Key=file_key)
+        readme_content = response["Body"].read().decode("utf-8")
+
+        # Extract project description (basic example)
+        lines = readme_content.split("\n")
+        project_description = lines[0] if lines else "No description found."
+
+        # Extract dependencies section (if exists)
+        dependencies = []
+        if "dependencies" in readme_content.lower():
+            dependencies = [
+                line.strip() for line in lines if "dependency" in line.lower()
+            ]
+
+        return {
+            "project_description": project_description,
+            "dependencies": dependencies
+        }
+    except Exception as e:
+        return {"error": str(e)}
