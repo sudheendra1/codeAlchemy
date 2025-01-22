@@ -1,12 +1,14 @@
 import os
-from flask import Flask, request, jsonify
-from PIL import Image
-import pytesseract
 import io
+from flask import Flask, request, jsonify, send_file
+from PIL import Image
+import requests
 from ibm_boto3 import client
 from ibm_botocore.client import Config
 from dotenv import load_dotenv
-from ibm_function.process import process_image_for_ocr, analyze_text_with_nlp, process_readme, process_pdf
+from ibm_function.process import process_image_for_ocr, process_pdf
+from ibm_function.voice import speech_to_text, text_to_speech
+from ibm_function.watsonassistant import send_to_assistant
 from llm.llm import send_to_llm
 
 app = Flask(__name__)
@@ -64,13 +66,58 @@ def upload_and_process_with_llm():
         # Send extracted text to the LLM
         llm_response = send_to_llm(extracted_text)
 
+        # Optionally, send the LLM response or the extracted text to Watson Assistant
+        assistant_response = send_to_assistant(llm_response.get("results", extracted_text))
+
         return jsonify({
             "message": f"File {file.filename} processed successfully!",
-            "llm_processed_json": llm_response
+            "llm_processed_json": llm_response,
+            "assistant_response": assistant_response
         }), 200
-    
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/chat", methods=["POST"])
+def chat_with_assistant():
+    """
+    Flask endpoint to handle chat interactions with Watson Assistant.
+    """
+    data = request.json
+    user_input = data.get("message")
+    if not user_input:
+        return jsonify({"error": "No message provided"}), 400
+
+    try:
+        # Use the send_to_assistant function
+        assistant_response = send_to_assistant(user_input)
+        return jsonify({"response": assistant_response}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/voice", methods=["POST"])
+def voice_interaction():
+    if "audio" not in request.files:
+        return jsonify({"error": "No audio file provided"}), 400
+
+    audio_file = request.files["audio"]
+
+    try:
+        # Step 1: Convert audio to text
+        user_text = speech_to_text(audio_file)
+
+        # Step 2: Send text to Watson Assistant
+        assistant_reply = send_to_assistant(user_text)
+
+        # Step 3: Convert assistant reply to audio
+        audio_content = text_to_speech(assistant_reply)
+
+        # Return audio response
+        audio_output = io.BytesIO(audio_content)
+        return send_file(audio_output, mimetype="audio/wav", as_attachment=True, download_name="response.wav")
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+        
 if __name__ == "__main__":
     app.run(debug=True)
