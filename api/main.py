@@ -10,8 +10,12 @@ from ibm_function.process import process_image_for_ocr, process_pdf
 from ibm_function.voice import speech_to_text, text_to_speech
 from ibm_function.watsonassistant import send_to_assistant
 from llm.llm import send_to_llm
+from llm.llm1 import send_to_llm_code
+from flask_cors import CORS
+
 
 app = Flask(__name__)
+CORS(app)
 
 load_dotenv()  
 
@@ -20,6 +24,8 @@ COS_ENDPOINT = os.getenv("ENDPOINT")
 COS_API_KEY_ID = os.getenv("API_KEY")
 COS_INSTANCE_CRN = os.getenv("INSTANCE_CRN")
 COS_BUCKET_NAME = os.getenv("BUCKET_NAME")
+llm_memory = None 
+
 
 # Initialize IBM Cloud Object Storage Client
 cos = client(
@@ -32,6 +38,7 @@ cos = client(
 
 @app.route("/upload", methods=["POST"])
 def upload_and_process_with_llm():
+    global llm_memory
     if "file" not in request.files:
         return jsonify({"error": "No file part in the request"}), 400
 
@@ -64,15 +71,20 @@ def upload_and_process_with_llm():
             }), 200
 
         # Send extracted text to the LLM
-        llm_response = send_to_llm(extracted_text)
+        if file_ext in [".png", ".jpeg", ".jpg"]:
+            llm_response = send_to_llm_code(extracted_text)
+
+        else:
+          llm_response = send_to_llm(extracted_text)
 
         # Optionally, send the LLM response or the extracted text to Watson Assistant
-        assistant_response = send_to_assistant(llm_response.get("results", extracted_text))
+        #assistant_response = send_to_assistant(llm_response.get("results", extracted_text))
+        llm_memory = llm_response
 
         return jsonify({
             "message": f"File {file.filename} processed successfully!",
             "llm_processed_json": llm_response,
-            "assistant_response": assistant_response
+            #"assistant_response": assistant_response
         }), 200
 
     except Exception as e:
@@ -83,6 +95,7 @@ def chat_with_assistant():
     """
     Flask endpoint to handle chat interactions with Watson Assistant.
     """
+    global llm_memory
     data = request.json
     user_input = data.get("message")
     if not user_input:
@@ -90,7 +103,12 @@ def chat_with_assistant():
 
     try:
         # Use the send_to_assistant function
-        assistant_response = send_to_assistant(user_input)
+        #assistant_response = send_to_assistant(user_input)
+        # make a send to llm call
+        if llm_memory:  # Check if the LLM response exists in memory
+            # Use the LLM response stored earlier as the prompt for the assistant
+            user_input = f"Previous LLM response: {llm_memory['llm_processed_json']}\nUser Message: {user_input}"
+        assistant_response = send_to_llm_code(user_input)
         return jsonify({"response": assistant_response}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

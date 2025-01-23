@@ -10,6 +10,8 @@ from ibm_watson.natural_language_understanding_v1 import Features, ConceptsOptio
 from ibm_cloud_sdk_core.authenticators import IAMAuthenticator 
 from dotenv import load_dotenv
 
+pytesseract.pytesseract.tesseract_cmd = 'C:\Program Files\Tesseract-OCR'
+
 load_dotenv() 
 
 # IBM COS Configuration

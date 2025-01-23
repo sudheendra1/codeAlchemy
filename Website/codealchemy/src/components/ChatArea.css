@@ -21,14 +21,15 @@
   /*border: 2px solid #007bff;*/ 
   background:#007bff ; 
   color: white; 
-  align-self: center; 
+  align-self: flex-end; 
   border-radius: 15px;
 }
 
 .message.chatbot {
   background: none;
   color: black; 
-  align-self: center; 
+  background: #888;
+  align-self: flex-start; 
 }
 
 .no-messages {

@@ -2,32 +2,197 @@ import React, { useState } from "react";
 import Sidebar from "./components/Sidebar";
 import ChatArea from "./components/ChatArea";
 import TextInput from "./components/TextInput";
+import axios from "axios";
 import "./App.css";
 
 function App() {
+  var count = 0;
+  var textCount =0;
   const [chats, setChats] = useState([]);
   const [activeChat, setActiveChat] = useState(null);
 
-  const handleSendMessage = (message) => {
+  const handleSendMessage = async (message, file) => {
     if (!activeChat) return;
 
+    // Display user's message in chat area immediately
+    // setChats((prevChats) =>
+    //   prevChats.map((chat) =>
+    //     chat.id === activeChat.id
+    //       ? {
+    //           ...chat,
+    //           messages: [
+    //             ...chat.messages,
+    //             { text: message, type: "user" },
+    //           ],
+    //         }
+    //       : chat
+    //   )
+    // );
+
+    // setActiveChat((prevChat) => ({
+    //   ...prevChat,
+    //   messages: [
+    //     ...prevChat.messages,
+    //     { text: message, type: "user" },
+    //   ],
+    // }));
+
+    if (file) {
+      const documentName = file.name;
+
+    // Display document name in the user section
     setChats((prevChats) =>
       prevChats.map((chat) =>
         chat.id === activeChat.id
           ? {
               ...chat,
-              messages: [...chat.messages, { text: message, type: "user" }],
-              name: chat.messages.length === 0 ? message : chat.name,
+              messages: [
+                ...chat.messages,
+                { text: `Uploading file: ${documentName}`, type: "user" },
+              ],
             }
           : chat
       )
     );
 
-    // Update the active chat to trigger re-render
     setActiveChat((prevChat) => ({
       ...prevChat,
-      messages: [...prevChat.messages, { text: message, type: "user" }],
+      messages: [
+        ...prevChat.messages,
+        { text: `Uploading file: ${documentName}`, type: "user" },
+      ],
     }));
+      // Handle file upload
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const response = await axios.post("http://127.0.0.1:5000/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+        console.log(response.data);
+
+        const { message: uploadMessage, llm_processed_json } = response.data;
+        const generatedText = llm_processed_json.results[0].generated_text; 
+        count++;
+
+        setChats((prevChats) =>
+          prevChats.map((chat) =>
+            chat.id === activeChat.id
+              ? {
+                  ...chat,
+                  messages: [
+                    ...chat.messages,
+                    { text: `File uploaded: ${uploadMessage}`, type: "system" },
+                    { text: generatedText, type: "chatbot" },
+                    {text: "Please provide the query you want resolved",type:"chatbot"},
+                  ],
+                }
+              : chat
+          )
+        )
+
+        setActiveChat((prevChat) => ({
+          ...prevChat,
+          messages: [
+            ...prevChat.messages,
+            { text: `File uploaded: ${uploadMessage}`, type: "system" },
+            { text: generatedText, type: "chatbot" },
+            count===1?{text: "Please provide the query you want resolved",type:"chatbot"}:{text: "",type:"chatbot"},
+          ],
+        }));
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        setChats((prevChats) =>
+          prevChats.map((chat) =>
+            chat.id === activeChat.id
+              ? {
+                  ...chat,
+                  messages: [
+                    ...chat.messages,
+                    { text: "Error uploading file. Please try again.", type: "system" },
+                  ],
+                }
+              : chat
+          )
+        );
+      }
+    } else {
+      // Handle chat message
+      if(textCount==0){
+        setChats((prevChats) =>
+          prevChats.map((chat) =>
+            chat.id === activeChat.id
+              ? {
+                  ...chat,
+                  messages: [
+                    ...chat.messages,
+                    { text: message, type: "user" },
+                    { text: "please provide the stacktrace of your error", type: "chatbot" },
+                  ],
+                  name: chat.messages.length === 0 ? message : chat.name,
+                }
+              : chat
+          )
+        );
+
+        setActiveChat((prevChat) => ({
+          ...prevChat,
+          messages: [
+            ...prevChat.messages,
+            { text: message, type: "user" },
+            { text: "please provide the stacktrace of your error", type: "chatbot" },
+          ],
+        }));
+
+      }
+      else{
+      try {
+        const response = await axios.post("http://127.0.0.1:5000/chat", { message });
+        const { response: assistantResponse } = response.data;
+        console.log(response.data);
+
+        setChats((prevChats) =>
+          prevChats.map((chat) =>
+            chat.id === activeChat.id
+              ? {
+                  ...chat,
+                  messages: [
+                    ...chat.messages,
+                    { text: assistantResponse, type: "chatbot" },
+                  ],
+                  name: chat.messages.length === 0 ? message : chat.name,
+                }
+              : chat
+          )
+        );
+
+        setActiveChat((prevChat) => ({
+          ...prevChat,
+          messages: [
+            ...prevChat.messages,
+            { text: assistantResponse, type: "chatbot" },
+          ],
+        }));
+      } catch (error) {
+        console.error("Error sending message:", error);
+        setChats((prevChats) =>
+          prevChats.map((chat) =>
+            chat.id === activeChat.id
+              ? {
+                  ...chat,
+                  messages: [
+                    ...chat.messages,
+                    { text: "Error: Unable to get a response from the chatbot.", type: "system" },
+                  ],
+                }
+              : chat
+          )
+        );
+      }}
+    }
   };
 
   const handleNewChat = () => {
