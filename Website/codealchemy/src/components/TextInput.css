@@ -1,41 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 .text-input-container {
-    display: flex;
-    padding: 10px;
-    background: #fff;
-    border-top: 1px solid #ddd;
-  }
-  
-  textarea {
-    flex-grow: 1;
-    resize: none;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 10px;
-  }
-  
-  button {
-    margin-left: 10px;
-    padding: 10px 15px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-  }
-  
-  button:hover {
-    opacity: 0.9;
-  }
-  
-  .mic-button {
-    padding: 10px;
-    border: none;
-    border-radius: 50%; /* Circular button */
-    font-size: 20px;
-    color: white;
-    cursor: pointer;
-  }
-  
-  .mic-button:hover {
-    opacity: 0.8;
-  }
-  
+  @apply bg-white p-4 flex items-center shadow-md;
+}
+
+textarea {
+  @apply flex-grow resize-none px-4 py-2 border border-gray-300 rounded-md;
+}
+
+button {
+  @apply ml-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md;
+}
+
+.mic-button {
+  @apply ml-4 p-2 rounded-full;
+}
+
+.mic-button.active {
+  @apply bg-black text-white;
+}
+
+.mic-button:not(.active) {
+  @apply bg-blue-500 hover:bg-blue-600 text-white;
+}

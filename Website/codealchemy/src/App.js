@@ -14,66 +14,40 @@ function App() {
   const handleSendMessage = async (message, file) => {
     if (!activeChat) return;
 
-    // Display user's message in chat area immediately
-    // setChats((prevChats) =>
-    //   prevChats.map((chat) =>
-    //     chat.id === activeChat.id
-    //       ? {
-    //           ...chat,
-    //           messages: [
-    //             ...chat.messages,
-    //             { text: message, type: "user" },
-    //           ],
-    //         }
-    //       : chat
-    //   )
-    // );
-
-    // setActiveChat((prevChat) => ({
-    //   ...prevChat,
-    //   messages: [
-    //     ...prevChat.messages,
-    //     { text: message, type: "user" },
-    //   ],
-    // }));
-
     if (file) {
       const documentName = file.name;
 
-    // Display document name in the user section
-    setChats((prevChats) =>
-      prevChats.map((chat) =>
-        chat.id === activeChat.id
-          ? {
-              ...chat,
-              messages: [
-                ...chat.messages,
-                { text: `Uploading file: ${documentName}`, type: "user" },
-              ],
-            }
-          : chat
-      )
-    );
+      setChats((prevChats) =>
+        prevChats.map((chat) =>
+          chat.id === activeChat.id
+            ? {
+                ...chat,
+                messages: [
+                  ...chat.messages,
+                  { text: `Uploading file: ${documentName}`, type: "user" },
+                ],
+              }
+            : chat
+        )
+      );
 
-    setActiveChat((prevChat) => ({
-      ...prevChat,
-      messages: [
-        ...prevChat.messages,
-        { text: `Uploading file: ${documentName}`, type: "user" },
-      ],
-    }));
-      // Handle file upload
-      const formData = new FormData();
-      formData.append("file", file);
+      setActiveChat((prevChat) => ({
+        ...prevChat,
+        messages: [
+          ...prevChat.messages,
+          { text: `Uploading file: ${documentName}`, type: "user" },
+        ],
+      }));
 
       try {
+        const formData = new FormData();
+        formData.append("file", file);
+
         const response = await axios.post("http://127.0.0.1:5000/upload", formData, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
-        console.log(response.data);
-
         const { message: uploadMessage, llm_processed_json } = response.data;
         const generatedText = llm_processed_json.results[0].generated_text; 
         count++;
@@ -120,7 +94,6 @@ function App() {
         );
       }
     } else {
-      // Handle chat message
       if(textCount==0){
         setChats((prevChats) =>
           prevChats.map((chat) =>
@@ -152,7 +125,6 @@ function App() {
       try {
         const response = await axios.post("http://127.0.0.1:5000/chat", { message });
         const { response: assistantResponse } = response.data;
-        console.log(response.data);
 
         setChats((prevChats) =>
           prevChats.map((chat) =>
@@ -211,7 +183,7 @@ function App() {
   };
 
   return (
-    <div className="app">
+    <div className="app bg-gray-100 flex h-screen">
       <Sidebar
         chats={chats}
         activeChat={activeChat}
@@ -219,15 +191,15 @@ function App() {
         onNewChat={handleNewChat}
         onDeleteChat={handleDeleteChat}
       />
-      <div className="main">
+      <div className="main flex-grow">
         {activeChat ? (
           <>
             <ChatArea messages={activeChat.messages} />
             <TextInput onSend={handleSendMessage} />
           </>
         ) : (
-          <div className="no-chat-selected">
-            <h2>Select a chat or start a new one</h2>
+          <div className="no-chat-selected flex items-center justify-center h-full">
+            <h2 className="text-gray-500 text-xl">Select a chat or start a new one</h2>
           </div>
         )}
       </div>

@@ -1,39 +1,30 @@
-.chat-area {
-  flex-grow: 1;
-  padding: 20px;
-  overflow-y: auto;
-  background: #f6f7f9;
-  display: flex;
-  flex-direction: column;
-  align-items: center; /* Center-align all content horizontally */
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-.message {
-  margin-bottom: 10px;
-  padding: 10px 15px;
-  border-radius: 20px;
-  max-width: 70%;
-  word-wrap: break-word;
-  text-align: center; /* Center-align text */
-}
 
-.message.user {
-  /*border: 2px solid #007bff;*/ 
-  background:#007bff ; 
-  color: white; 
-  align-self: flex-end; 
-  border-radius: 15px;
-}
+@layer components {
+  .word-break {
+    word-break: break-all;
+  }
 
-.message.chatbot {
-  background: none;
-  color: black; 
-  background: #888;
-  align-self: flex-start; 
-}
+  .chat-area {
+    @apply flex-grow p-8 overflow-y-auto bg-gray-100;
+  }
 
-.no-messages {
-  text-align: center;
-  margin-top: 50px;
-  color: #888;
+  .message {
+    @apply mb-4 px-6 py-4 max-w-[70%] word-break rounded-2xl text-center;
+  }
+
+  .message.user {
+    @apply bg-blue-500 text-white self-end rounded-br-none;
+  }
+
+  .message.chatbot {
+    @apply bg-gray-400 self-start rounded-bl-none;
+  }
+
+  .no-messages {
+    @apply flex items-center justify-center h-full text-gray-500;
+  }
 }

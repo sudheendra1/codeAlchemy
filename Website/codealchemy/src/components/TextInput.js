@@ -8,27 +8,23 @@ function TextInput({ onSend }) {
   const [isListening, setIsListening] = useState(false);
   const { transcript, resetTranscript } = useSpeechRecognition();
 
-  // Handle file selection
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
   };
 
-  // Handle file upload
   const handleUpload = async () => {
     if (!file) {
       alert("Please select a file to upload.");
       return;
     }
-    // Call onSend with the file
     onSend(null, file);
-    setFile(null); // Clear the file input after the upload
+    setFile(null);
   };
 
-  // Handle sending a chat message
   const handleSend = async () => {
     if (input.trim() === "") return;
-    onSend(input, null); // Call onSend with the input message
-    setInput(""); // Clear the input field
+    onSend(input, null);
+    setInput("");
   };
 
   const toggleListening = () => {
@@ -36,26 +32,42 @@ function TextInput({ onSend }) {
       SpeechRecognition.startListening({ continuous: true });
     } else {
       SpeechRecognition.stopListening();
-      setInput(transcript); // Set the transcript in the input field
-      resetTranscript(); // Clear the transcript after using it
+      setInput(transcript);
+      resetTranscript();
     }
     setIsListening(!isListening);
   };
 
   return (
-    <div className="text-input-container">
+    <div className="text-input-container bg-white p-4 flex items-center shadow-md">
       <textarea
         value={input}
         onChange={(e) => setInput(e.target.value)}
+        className="flex-grow resize-none px-4 py-2 border border-gray-300 rounded-md"
         placeholder="Type your message..."
       />
-      <button onClick={handleSend}>Send</button>
-      <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload}>Upload</button>
       <button
-        className="mic-button"
+        onClick={handleSend}
+        className="ml-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
+      >
+        Send
+      </button>
+      <input
+        type="file"
+        onChange={handleFileChange}
+        className="ml-4"
+      />
+      <button
+        onClick={handleUpload}
+        className="ml-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
+      >
+        Upload
+      </button>
+      <button
+        className={`ml-4 p-2 rounded-full ${
+          isListening ? "bg-black text-white" : "bg-blue-500 hover:bg-blue-600 text-white"
+        }`}
         onClick={toggleListening}
-        style={{ backgroundColor: isListening ? "#000000" : "#007bff" }}
       >
         🎙️
       </button>
