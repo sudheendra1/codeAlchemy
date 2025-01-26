@@ -1,34 +1,90 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 .sidebar {
-  @apply w-72 bg-gray-800 text-white p-6 overflow-y-auto;
+  width: 250px;
+  background-color: #1e2330;
+  color: white;
+  height: 100vh;
+  overflow-y: auto;
 }
 
 .sidebar-header {
-  @apply mb-6 flex justify-between items-center;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .sidebar-header h2 {
-  @apply text-lg font-medium;
+  font-size: 1rem;
+  font-weight: 500;
 }
 
 .new-chat-button {
-  @apply bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md;
+  background-color: #3b82f6;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
-li {
-  @apply px-4 py-3 mb-2 bg-gray-700 rounded-md cursor-pointer flex justify-between items-center;
+.new-chat-button:hover {
+  background-color: #2563eb;
 }
 
-li.active {
-  @apply bg-gray-600;
+.sidebar ul {
+  list-style: none;
+  padding: 0.5rem;
 }
 
-li:hover {
-  @apply bg-gray-600;
+.sidebar li {
+  padding: 0.75rem 1rem;
+  margin: 0.25rem 0;
+  border-radius: 4px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sidebar li:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.sidebar li.active {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.chat-name {
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .delete-button {
-  @apply text-white hover:text-red-500;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
 }
+
+.sidebar li:hover .delete-button {
+  opacity: 1;
+}
+
+.delete-button:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+

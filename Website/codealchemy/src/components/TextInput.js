@@ -1,78 +1,67 @@
-import React, { useState } from "react";
-import "./TextInput.css";
-import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition";
+import React, { useState } from "react"
+import "./TextInput.css"
+import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognition"
+import { Mic, Send, Upload } from "lucide-react"
 
 function TextInput({ onSend }) {
-  const [input, setInput] = useState("");
-  const [file, setFile] = useState(null);
-  const [isListening, setIsListening] = useState(false);
-  const { transcript, resetTranscript } = useSpeechRecognition();
+  const [input, setInput] = useState("")
+  const [file, setFile] = useState(null)
+  const [isListening, setIsListening] = useState(false)
+  const { transcript, resetTranscript } = useSpeechRecognition()
 
   const handleFileChange = (e) => {
-    setFile(e.target.files[0]);
-  };
+    setFile(e.target.files[0])
+  }
 
   const handleUpload = async () => {
     if (!file) {
-      alert("Please select a file to upload.");
-      return;
+      alert("Please select a file to upload.")
+      return
     }
-    onSend(null, file);
-    setFile(null);
-  };
+    onSend(null, file)
+    setFile(null)
+  }
 
   const handleSend = async () => {
-    if (input.trim() === "") return;
-    onSend(input, null);
-    setInput("");
-  };
+    if (input.trim() === "") return
+    onSend(input, null)
+    setInput("")
+  }
 
   const toggleListening = () => {
     if (!isListening) {
-      SpeechRecognition.startListening({ continuous: true });
+      SpeechRecognition.startListening({ continuous: true })
     } else {
-      SpeechRecognition.stopListening();
-      setInput(transcript);
-      resetTranscript();
+      SpeechRecognition.stopListening()
+      setInput(transcript)
+      resetTranscript()
     }
-    setIsListening(!isListening);
-  };
+    setIsListening(!isListening)
+  }
 
   return (
-    <div className="text-input-container bg-white p-4 flex items-center shadow-md">
-      <textarea
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-        className="flex-grow resize-none px-4 py-2 border border-gray-300 rounded-md"
-        placeholder="Type your message..."
-      />
-      <button
-        onClick={handleSend}
-        className="ml-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
-      >
-        Send
+    <div className="text-input-container">
+      <textarea value={input} onChange={(e) => setInput(e.target.value)} placeholder="Type your message..." />
+      <button className="send-button" onClick={handleSend}>
+        <Send size={18} />
       </button>
-      <input
-        type="file"
-        onChange={handleFileChange}
-        className="ml-4"
-      />
-      <button
-        onClick={handleUpload}
-        className="ml-4 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md"
-      >
-        Upload
-      </button>
-      <button
-        className={`ml-4 p-2 rounded-full ${
-          isListening ? "bg-black text-white" : "bg-blue-500 hover:bg-blue-600 text-white"
-        }`}
-        onClick={toggleListening}
-      >
-        🎙️
+      <input type="file" onChange={handleFileChange} style={{ display: "none" }} id="file-input" />
+      <label htmlFor="file-input">
+        <button className="upload-button" onClick={() => document.getElementById("file-input").click()}>
+          Choose File
+        </button>
+      </label>
+      {file && (
+        <button className="upload-button" onClick={handleUpload}>
+          <Upload size={18} />
+        </button>
+      )}
+      <button className={`mic-button ${isListening ? "active" : ""}`} onClick={toggleListening}>
+        <Mic size={18} />
       </button>
     </div>
-  );
+  )
 }
 
-export default TextInput;
+export default TextInput
+
